@@ -4,19 +4,19 @@ import com.nobroker.rentify.controller.dto.LoginRequest;
 import com.nobroker.rentify.entity.User;
 import com.nobroker.rentify.helper.JwtHelper;
 import com.nobroker.rentify.service.RentifyService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import com.nobroker.rentify.controller.dto.LoginResponse;
+import org.springframework.validation.BindingResult;
 
 @Controller
 @RequestMapping("/auth")
+@CrossOrigin("http://192.168.1.4:8081")
 public class RentifyController {
 
     RentifyService rentifyService;
@@ -25,21 +25,21 @@ public class RentifyController {
     RentifyController(RentifyService rentifyService, AuthenticationManager authenticationManager){
         this.rentifyService = rentifyService;
         this.authenticationManager = authenticationManager;
-
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody User userRequest) {
+    public ResponseEntity<String> signup(@Valid @RequestBody User userRequest, BindingResult br) {
+        System.out.println("inside SignUp function controller "+userRequest);
+        if(br.hasErrors()) {
+            System.out.println("Binding Result Error "+br.getAllErrors());
+            return ResponseEntity.badRequest().body("Validation failed");
+        }
         try {
-            rentifyService.signUp(userRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body("User signed up successfully");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return rentifyService.signUp(userRequest);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing your request");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
@@ -49,10 +49,9 @@ public class RentifyController {
         return ResponseEntity.ok(new LoginResponse(request.getEmail(), token));
     }
 
-
     @RequestMapping("/test")
     public ResponseEntity<Void> test() {
-//        System.out.println("Inside Authentication Test");
+//      System.out.println("Inside Authentication Test");
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

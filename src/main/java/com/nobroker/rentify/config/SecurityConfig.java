@@ -13,8 +13,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.nobroker.rentify.service.UserDetailsServiceImpl;
+
+//import org.springframework.web.servlet.config.annotation.CorsConfiguration;
+//import org.springframework.web.servlet.config.annotation.CorsConfigurationSource;
+//import org.springframework.web.servlet.config.annotation.UrlBasedCorsConfigurationSource;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -34,19 +42,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//        Set permissions on endpoints
                 .authorizeHttpRequests(auth -> auth
-//            our public endpoints
                         .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-//            our private endpoints
                         .anyRequest().authenticated())
-                .authenticationManager(authenticationManager)
+                .authenticationManager(authenticationManager(http))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -57,7 +62,17 @@ public class SecurityConfig {
         authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
         return authenticationManagerBuilder.build();
     }
-}
 
-// CORS(Cross-origin resource sharing) is just to avoid if you run javascript across different domains like if you execute JS on http://testpage.com and access http://anotherpage.com
-// CSRF(Cross-Site Request Forgery)
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("http://192.168.1.4:8081")
+//                        .allowedMethods("*");
+//            }
+//        };
+//    }
+
+}

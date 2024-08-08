@@ -4,6 +4,8 @@ import com.nobroker.rentify.controller.dto.LoginRequest;
 import com.nobroker.rentify.entity.User;
 import com.nobroker.rentify.repository.LogInRepository;
 import com.nobroker.rentify.repository.SignUpRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,17 +30,26 @@ public class RentifyServiceImpl implements RentifyService{
         this.userDetailsServiceImpl = userDetailsServiceImpl;
     }
 
-
     @Override
-    public void signUp(User userRequest) throws Exception {
+    public ResponseEntity<String> signUp(User userRequest) {
+        System.out.println("userRequest "+userRequest);
         String email = userRequest.getEmail();
+        String phoneNo = userRequest.getPhoneNo();
         Optional<User> existingUser = signUpRepository.findById(email);
+        Optional<User> existingUser2 = signUpRepository.findByPhoneNo(phoneNo);
+        System.out.println("existingUser "+existingUser);
+        System.out.println("existingUser2 "+existingUser2);
+//        System.out.println("Sign up details of user " + userRequest);
         if (existingUser.isPresent()) {
-            throw new IllegalArgumentException("User with this email already exists");
+            return new ResponseEntity<>("User with this email already exists", HttpStatus.BAD_REQUEST);
+        }
+        if(existingUser2.isPresent()){
+            return new ResponseEntity<>("Phone number already registered", HttpStatus.BAD_REQUEST);
         }
         String hashedPassword = passwordEncoder.encode(userRequest.getPassword());
         userRequest.setPassword(hashedPassword);
         signUpRepository.save(userRequest);
+        return new ResponseEntity<>("User signed up successfully", HttpStatus.CREATED);
     }
 
     @Override

@@ -5,10 +5,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-import java.util.Collection;
 import java.util.UUID;
 
 @Entity
@@ -20,22 +21,33 @@ public class User{
 
     @Id
     @Column(name="email")
+    @NotNull(message = "Please provide a email")
     private String email;
 
     @Column(name="phoneno")
-    private int phoneNo;
+    @NotNull(message = "Please provide a phoneno")
+    private String phoneNo;
 
     @Column(name="password")
+    @NotNull(message = "Please provide a password")
+    @Size(min = 2, message = "Password must be at least 8 characters long")
     private String password;
+
+    @Column(name="name")
+    @NotNull(message = "Please provide a fullName")
+    @NotBlank(message = "Please provide a fullName")
+    @NotEmpty(message = "Name may not be empty")
+    private String fullName;
 
     User(){
         this.uid =  UUID.randomUUID().toString().replace("-", "").substring(0, 24);
     }
 
-    public User(String email, int phoneNo, String password) {
+    public User(String email, String phoneNo, String password, String fullName) {
         this.email = email;
         this.phoneNo = phoneNo;
         this.password = password;
+        this.fullName = fullName;
     }
 
     public String getUid() {
@@ -54,59 +66,38 @@ public class User{
         this.email = email;
     }
 
-    public int getPhoneNo() {
+    public String getPhoneNo() {
         return phoneNo;
     }
 
-    public void setPhoneNo(int phoneNo) {
+    public void setPhoneNo(String phoneNo) {
         this.phoneNo = phoneNo;
     }
-
-//    @Override
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return null;
-//    }
 
     public String getPassword() {
         return password;
     }
 
-//    @Override
-//    public String getUsername() {
-//        return null;
-//    }
-//
-//    @Override
-//    public boolean isAccountNonExpired() {
-//        return UserDetails.super.isAccountNonExpired();
-//    }
-//
-//    @Override
-//    public boolean isAccountNonLocked() {
-//        return UserDetails.super.isAccountNonLocked();
-//    }
-//
-//    @Override
-//    public boolean isCredentialsNonExpired() {
-//        return UserDetails.super.isCredentialsNonExpired();
-//    }
-//
-//    @Override
-//    public boolean isEnabled() {
-//        return UserDetails.super.isEnabled();
-//    }
-
     public void setPassword(String password) {
         this.password = password;
     }
 
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
     @Override
     public String toString() {
-        return "SignUp{" +
+        return "User{" +
                 "uid='" + uid + '\'' +
                 ", email='" + email + '\'' +
                 ", phoneNo=" + phoneNo +
                 ", password='" + password + '\'' +
+                ", fullName='" + fullName + '\'' +
                 '}';
     }
 }
